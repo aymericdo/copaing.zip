@@ -1,0 +1,22 @@
+{
+  "name": "copaing",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node" : ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "express": "^4.17.1",
+    "faker": "^5.4.0",
+    "moment": "^2.29.1"
+  }
+}
