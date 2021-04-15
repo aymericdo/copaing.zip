@@ -3,3 +3,4 @@ accounts.json
 appointments.json
 availabilities.json
 patients.json
+node_modules/
