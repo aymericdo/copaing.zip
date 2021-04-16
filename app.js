@@ -38,35 +38,60 @@ app.post('/appointments', (req, res) => {
   const data = JSON.stringify(freshAppointments);
   fs.writeFileSync('appointments.json', data);
 
-  res.status(200).json(newAppointment)
+  res.status(201).json(newAppointment)
 })
 
 app.delete('/appointments/:appointmentId', (req, res) => {
   const appointmentId = req.params.appointmentId;
+  const lastRevisionDatetime = req.query.last_revision_datetime;
 
-  const data = JSON.stringify(freshAppointments.filter(a => a.id !== appointmentId));
+  let cancelAppointment = freshAppointments.filter(a => a.id === appointmentId)
+  cancelAppointment = {
+    ...cancelAppointment,
+    cancelled: true,
+    cancelled_at: lastRevisionDatetime,
+    cancelled_by: 'hub',
+  }
+
+  // replace the edited patient by the new one
+  const data = JSON.stringify([
+    ...freshAppointments.filter(a => a.id !== appointmentId),
+    cancelAppointment,
+  ]);
   fs.writeFileSync('appointments.json', data);
 
-  res.status(200).json({})
+  res.status(204).send()
 })
 
 app.get('/appointments/:appointmentId', (req, res) => {
   const appointmentId = req.params.appointmentId;
-  res.status(200).json(freshAppointments.find(a => a.id === appointmentId))
+  const appointment = freshAppointments.find(a => a.id === appointmentId)
+  if (appointment) {
+    res.status(200).json(appointment)
+  } else {
+    res.status(404).send();
+  }
 })
 
 // Availability routes
 app.get('/availabilities', (req, res) => {
-  const perPage = req.query.per_page;
-  const page = req.query.page;
-  const availabilitiesToReturn = freshAvailabilities
-  res.header('X-total-count', availabilitiesToReturn.length)
-  res.status(200).json(pagination(freshAvailabilities, +perPage, +page))
+  // const perPage = req.query.per_page;
+  // const page = req.query.page;
+  // const availabilitiesToReturn = freshAvailabilities
+  // res.header('X-total-count', availabilitiesToReturn.length)
+  // res.status(200).json(pagination(freshAvailabilities, +perPage, +page))
+  res.status(299).json('not useful anymore')
 })
 
 app.get('/availabilities/:availabilityId', (req, res) => {
   const availabilityId = req.params.availabilityId;
-  res.status(200).json(freshAvailabilities.find(a => a.id === availabilityId));
+
+  const availability = freshAvailabilities.find(a => a.id === availabilityId)
+  if (availability) {
+    res.status(200).json(availability)
+  } else {
+    res.status(404).send();
+  }
 })
 
 // Patient routes
@@ -78,14 +103,15 @@ app.post('/patients', (req, res) => {
   const data = JSON.stringify(freshPatients);
   fs.writeFileSync('patients.json', data);
 
-  res.status(200).json(newPatient)
+  res.status(201).json(newPatient)
 })
 
 app.get('/patients', (req, res) => {
-  const perPage = req.query.per_page;
-  const page = req.query.page;
-  res.header('X-total-count', freshPatients.length)
-  res.status(200).json(pagination([...freshPatients], +perPage, +page))
+  // const perPage = req.query.per_page;
+  // const page = req.query.page;
+  // res.header('X-total-count', freshPatients.length)
+  // res.status(200).json(pagination([...freshPatients], +perPage, +page))
+  res.status(299).json('not useful anymore')
 })
 
 app.patch('/patients/:patientId', (req, res) => {
@@ -93,26 +119,42 @@ app.patch('/patients/:patientId', (req, res) => {
   const newPatient = req.body
 
   let editPatient = freshPatients.find(p => p.id === patientId)
-  editPatient = editNewPatient(editPatient, newPatient)
 
-  // replace the edited patient by the new one
-  const data = JSON.stringify([
-    ...freshPatients.filter(p => p.id !== editPatient.id),
-    editPatient,
-  ]);
-  fs.writeFileSync('patients.json', data);
-
-  res.status(200).json(editPatient)
+  if (editPatient) {
+    editPatient = editNewPatient(editPatient, newPatient)
+    
+    // replace the edited patient by the new one
+    const data = JSON.stringify([
+      ...freshPatients.filter(p => p.id !== editPatient.id),
+      editPatient,
+    ]);
+    fs.writeFileSync('patients.json', data);
+    
+    res.status(200).json(editPatient)
+  } else {
+    res.status(404).send()
+  }
 })
 
 app.get('/patients/:patientId', (req, res) => {
   const id = req.params.patientId;
-  res.status(200).json(freshPatients.find(pat => pat.id === id));
+  const patient = freshPatients.find(pat => pat.id === id)
+  if (patient) {
+    res.status(200).json(patient);
+  } else {
+    res.status(404).send()
+  }
 })
 
 app.get('/patients/by_hin/:patientHin', (req, res) => {
   const hin = req.params.patientHin;
-  res.status(200).json(freshPatients.find(pat => pat.hin_number === hin));
+
+  const patient = freshPatients.find(pat => pat.hin_number === hin)
+  if (patient) {
+    res.status(200).json(patient);
+  } else {
+    res.status(404).send()
+  }
 })
 
 // Resource routes
@@ -125,32 +167,55 @@ app.get('/resources', (req, res) => {
 
 app.get('/resources/:resourceId', (req, res) => {
   const resourceId = req.params.resourceId;
-  res.status(200).json(freshAccounts.find(account => account.id === resourceId));
+
+  const account = freshAccounts.find(account => account.id === resourceId)
+  if (account) {
+    res.status(200).json(account);
+  } else {
+    res.status(404).send()
+  }
 })
 
 app.get('/resources/:resourceId/availabilities', (req, res) => {
   const resourceId = req.params.resourceId;
   const perPage = req.query.per_page;
   const page = req.query.page;
-  const availabilitiesToReturn = freshAvailabilities.filter(a => a.resource.id === resourceId)
-  res.header('X-total-count', availabilitiesToReturn.length)
-  res.status(200).json(pagination(availabilitiesToReturn, +perPage, +page))
+
+  const account = freshAccounts.find(account => account.id === resourceId)
+  if (account) {
+    const availabilitiesToReturn = freshAvailabilities.filter(a => a.resource.id === resourceId)
+    res.header('X-total-count', availabilitiesToReturn.length)
+    res.status(200).json(pagination(availabilitiesToReturn, +perPage, +page))
+  } else {
+    res.status(404).send()
+  }
 })
 
 app.get('/resources/:resourceId/appointments', (req, res) => {
   const resourceId = req.params.resourceId;
   const perPage = req.query.per_page;
   const page = req.query.page;
-  const availability_ids = freshAvailabilities.filter(a => a.resource.id === resourceId).map(a => a.id)
-  const appointmentsToReturn = freshAppointments.filter(a => availability_ids.includes(a.availability_id))
-  res.header('X-total-count', appointmentsToReturn.length)
-  res.status(200).json(pagination(appointmentsToReturn, +perPage, +page))
+  const account = freshAccounts.find(account => account.id === resourceId)
+
+  if (account) {
+    const availability_ids = freshAvailabilities.filter(a => a.resource.id === resourceId).map(a => a.id)
+    const appointmentsToReturn = freshAppointments.filter(a => availability_ids.includes(a.availability_id))
+    res.header('X-total-count', appointmentsToReturn.length)
+    res.status(200).json(pagination(appointmentsToReturn, +perPage, +page))
+  } else {
+    res.status(404).send()
+  }
 })
 
 app.get('/resources/:resourceId/services', (req, res) => {
   const resourceId = req.params.resourceId;
-  console.log(resourceId)
-  res.status(200).json(freshServicesByAccount.hasOwnProperty(resourceId) ? freshServicesByAccount[resourceId] : [])
+  const account = freshAccounts.find(account => account.id === resourceId)
+
+  if (account) {
+    res.status(200).json(freshServicesByAccount.hasOwnProperty(resourceId) ? freshServicesByAccount[resourceId] : [])
+  } else {
+    res.status(404).send()
+  }
 })
 
 // Service routes
