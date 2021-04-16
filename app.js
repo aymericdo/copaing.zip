@@ -45,22 +45,27 @@ app.delete('/appointments/:appointmentId', (req, res) => {
   const appointmentId = req.params.appointmentId;
   const lastRevisionDatetime = req.query.last_revision_datetime;
 
-  let cancelAppointment = freshAppointments.filter(a => a.id === appointmentId)
-  cancelAppointment = {
-    ...cancelAppointment,
-    cancelled: true,
-    cancelled_at: lastRevisionDatetime,
-    cancelled_by: 'hub',
+  let cancelAppointment = freshAppointments.find(a => a.id === appointmentId)
+
+  if (cancelAppointment) {
+    cancelAppointment = {
+      ...cancelAppointment,
+      cancelled: true,
+      cancelled_at: lastRevisionDatetime,
+      cancelled_by: 'hub',
+    }
+    
+    // replace the edited patient by the new one
+    const data = JSON.stringify([
+      ...freshAppointments.filter(a => a.id !== appointmentId),
+      cancelAppointment,
+    ]);
+    fs.writeFileSync('appointments.json', data);
+
+    res.status(204).send()
+  } else {
+    res.status(404).send()
   }
-
-  // replace the edited patient by the new one
-  const data = JSON.stringify([
-    ...freshAppointments.filter(a => a.id !== appointmentId),
-    cancelAppointment,
-  ]);
-  fs.writeFileSync('appointments.json', data);
-
-  res.status(204).send()
 })
 
 app.get('/appointments/:appointmentId', (req, res) => {
