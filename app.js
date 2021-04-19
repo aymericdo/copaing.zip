@@ -103,8 +103,7 @@ app.post("/appointments", (req, res) => {
       );
       freshAppointments.push(newAppointment);
 
-      const data = JSON.stringify(freshAppointments);
-      fs.writeFileSync("appointments.json", data);
+      fs.writeFileSync("db/appointments.json", JSON.stringify(freshAppointments));
 
       res.status(201).json(newAppointment);
     }
@@ -134,11 +133,11 @@ app.delete("/appointments/:appointmentId", (req, res) => {
       };
 
       // replace the edited patient by the new one
-      const data = JSON.stringify([
+      freshAppointments = [
         ...freshAppointments.filter((a) => a.id !== appointmentId),
         cancelAppointment,
-      ]);
-      fs.writeFileSync("appointments.json", data);
+      ];
+      fs.writeFileSync("db/appointments.json", JSON.stringify(freshAppointments));
 
       res.status(204).send();
     }
@@ -228,8 +227,7 @@ app.post("/patients", (req, res) => {
   const newPatient = createNewPatient(patient);
   freshPatients.push(newPatient);
 
-  const data = JSON.stringify(freshPatients);
-  fs.writeFileSync("patients.json", data);
+  fs.writeFileSync("db/patients.json", JSON.stringify(freshPatients));
 
   res.status(201).json(newPatient);
 });
@@ -266,11 +264,11 @@ app.patch("/patients/:patientId", (req, res) => {
     editPatient = editNewPatient(editPatient, newPatient);
 
     // replace the edited patient by the new one
-    const data = JSON.stringify([
+    freshPatients = [
       ...freshPatients.filter((p) => p.id !== editPatient.id),
       editPatient,
-    ]);
-    fs.writeFileSync("patients.json", data);
+    ];
+    fs.writeFileSync("db/patients.json", JSON.stringify(freshPatients));
 
     res.status(204).json(editPatient);
   } else {
@@ -459,6 +457,18 @@ app.get("/services/:serviceId/appointments", (req, res) => {
   // res.status(200).json(pagination(appointmentsToReturn, +perPage, +page))
   res.status(299).json("not useful anymore");
 });
+
+console.log("CERTIFICATION VARIABLES")
+console.log(`baseUrl: http://localhost:${port}`)
+console.log(`to_delete_appointment_id: ${freshAppointments[0].id}`)
+console.log(`to_get_appointment_id: ${freshAppointments[1].id}`)
+console.log(`to_get_availability_id: ${freshAvailabilities[0].id}`)
+console.log(`to_patch_patient_id: ${freshPatients[0].id}`)
+console.log(`to_get_patient_id: ${freshPatients[0].id}`)
+console.log(`to_get_patient_hin: ${freshPatients[0].hin_number}`)
+console.log(`to_get_resource_id: ${freshAccounts[0].id}`)
+console.log(`to_get_service_id: ${freshServicesByAccount[freshAccounts[0].id][0].id}`)
+console.log(`cancelled_appointment_id_by_emr: ${freshAppointments[freshAppointments.length - 1].id}`)
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
