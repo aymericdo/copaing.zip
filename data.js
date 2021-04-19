@@ -215,27 +215,27 @@ export function initializeObjects({
   freshAppointments,
 }) {
   try {
-    const accountsRaw = fs.readFileSync("accounts.json");
+    const accountsRaw = fs.readFileSync("db/accounts.json");
     freshAccounts = JSON.parse(accountsRaw);
   } catch (err) {
     freshAccounts = [...Array(5).keys()].map((i) => createAccount(i));
 
     const data = JSON.stringify(freshAccounts);
-    fs.writeFileSync("accounts.json", data);
+    fs.writeFileSync("db/accounts.json", data);
   }
 
   try {
-    const patientsRaw = fs.readFileSync("patients.json");
+    const patientsRaw = fs.readFileSync("db/patients.json");
     freshPatients = JSON.parse(patientsRaw);
   } catch (err) {
     freshPatients = [...Array(52).keys()].map((i) => createPatient(i, freshAccounts));
 
     const data = JSON.stringify(freshPatients);
-    fs.writeFileSync("patients.json", data);
+    fs.writeFileSync("db/patients.json", data);
   }
 
   try {
-    const accountByServicesRaw = fs.readFileSync("account_by_services.json");
+    const accountByServicesRaw = fs.readFileSync("db/account_by_services.json");
     freshServicesByAccount = JSON.parse(accountByServicesRaw);
   } catch (err) {
     freshServicesByAccount = freshAccounts.reduce((prev, a) => {
@@ -244,11 +244,11 @@ export function initializeObjects({
     }, {});
 
     const data = JSON.stringify(freshServicesByAccount);
-    fs.writeFileSync("account_by_services.json", data);
+    fs.writeFileSync("db/account_by_services.json", data);
   }
 
   try {
-    const availabilitiesRaw = fs.readFileSync("availabilities.json");
+    const availabilitiesRaw = fs.readFileSync("db/availabilities.json");
     freshAvailabilities = JSON.parse(availabilitiesRaw);
   } catch (err) {
     freshAvailabilities = [...Array(40).keys()].map((i) => {
@@ -262,11 +262,11 @@ export function initializeObjects({
     });
 
     const data = JSON.stringify(freshAvailabilities);
-    fs.writeFileSync("availabilities.json", data);
+    fs.writeFileSync("db/availabilities.json", data);
   }
 
   try {
-    const appointmentsRaw = fs.readFileSync("appointments.json");
+    const appointmentsRaw = fs.readFileSync("db/appointments.json");
     freshAppointments = JSON.parse(appointmentsRaw);
   } catch (err) {
     freshAppointments = freshAvailabilities.map((a, i) => {
@@ -287,7 +287,7 @@ export function initializeObjects({
     });
 
     const data = JSON.stringify(freshAppointments);
-    fs.writeFileSync("appointments.json", data);
+    fs.writeFileSync("db/appointments.json", data);
   }
 
   return {
