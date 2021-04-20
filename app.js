@@ -471,7 +471,10 @@ app.get("/resources/:resourceId/services", (req, res) => {
 
 // Service routes
 app.get("/services", (req, res) => {
-  res.status(200).json(Object.values(freshServicesByAccount).flat());
+  const perPage = req.query.per_page;
+  const page = req.query.page;
+
+  res.status(200).json(pagination(Object.values(freshServicesByAccount).flat(), +perPage, +page));
 });
 
 app.get("/services/:serviceId", (req, res) => {
