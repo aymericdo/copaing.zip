@@ -50,6 +50,11 @@ function pagination(arr, perPage, page) {
   return chunks[page - 1];
 }
 
+app.use((req, res, next) => {
+  console.log(`${moment()} ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 // Routes
 app.post("/authorization", (req, res) => {
   res.status(200).json({ access_token: "azerty", expires_in: 900000 });
@@ -386,8 +391,14 @@ app.get("/resources/:resourceId/availabilities", (req, res) => {
     .filter(
       (a) =>
         a.resource.id === resourceId &&
-        moment(startTime).isBefore(moment(a.start_time)) &&
-        moment(endTime).isAfter(moment(a.end_time))
+        moment(startTime, moment.ISO_8601).isBefore(
+          moment(a.start_time),
+          moment.ISO_8601
+        ) &&
+        moment(endTime, moment.ISO_8601).isAfter(
+          moment(a.end_time),
+          moment.ISO_8601
+        )
     )
     .map((a) => ({
       ...a,
@@ -435,8 +446,14 @@ app.get("/resources/:resourceId/appointments", (req, res) => {
   const appointmentsToReturn = freshAppointments.filter(
     (a) =>
       availability_ids.includes(a.availability_id) &&
-      moment(startTime).isSameOrBefore(moment(a.start_time)) &&
-      moment(endTime).isSameOrAfter(moment(a.end_time))
+      moment(startTime, moment.ISO_8601).isBefore(
+        moment(a.start_time),
+        moment.ISO_8601
+      ) &&
+      moment(endTime, moment.ISO_8601).isAfter(
+        moment(a.end_time),
+        moment.ISO_8601
+      )
   );
 
   res.header("X-total-count", appointmentsToReturn.length);
@@ -474,7 +491,11 @@ app.get("/services", (req, res) => {
   const perPage = req.query.per_page;
   const page = req.query.page;
 
-  res.status(200).json(pagination(Object.values(freshServicesByAccount).flat(), +perPage, +page));
+  res
+    .status(200)
+    .json(
+      pagination(Object.values(freshServicesByAccount).flat(), +perPage, +page)
+    );
 });
 
 app.get("/services/:serviceId", (req, res) => {
