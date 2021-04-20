@@ -30,6 +30,10 @@ let {
 } = db;
 
 function pagination(arr, perPage, page) {
+  if (!arr.length) {
+    return [];
+  }
+
   if (!perPage) {
     perPage = 50;
   }
@@ -188,7 +192,11 @@ app.get("/availabilities/:availabilityId", (req, res) => {
 
   const availability = freshAvailabilities.find((a) => a.id === availabilityId);
   if (availability) {
-    res.status(200).json(availability);
+    res.status(200).json({
+      ...availability,
+      resource_id: availability.resource.id,
+      service_id: availability.service.id,
+    });
   } else {
     res.status(404).send({
       error: {
@@ -374,12 +382,18 @@ app.get("/resources/:resourceId/availabilities", (req, res) => {
     return;
   }
 
-  const availabilitiesToReturn = freshAvailabilities.filter(
-    (a) =>
-      a.resource.id === resourceId &&
-      moment(startTime).isSameOrBefore(moment(a.start_time)) &&
-      moment(endTime).isSameOrAfter(moment(a.end_time))
-  );
+  const availabilitiesToReturn = freshAvailabilities
+    .filter(
+      (a) =>
+        a.resource.id === resourceId &&
+        moment(startTime).isBefore(moment(a.start_time)) &&
+        moment(endTime).isAfter(moment(a.end_time))
+    )
+    .map((a) => ({
+      ...a,
+      resource_id: a.resource.id,
+      service_id: a.service.id,
+    }));
 
   res.header("X-total-count", availabilitiesToReturn.length);
   res.status(200).json(pagination(availabilitiesToReturn, +perPage, +page));

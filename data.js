@@ -146,7 +146,7 @@ export function createNewPatient(petal_patient) {
     family_doctor: null,
     address: {
       street: petal_patient.address.street,
-      last_revision_datetime: petal_patient.last_revision_datetime,
+      last_revision_datetime: petal_patient.address.last_revision_datetime,
       city: petal_patient.address.city,
       postal_code: petal_patient.address.postal_code,
       iso_code: petal_patient.address.iso_code,
@@ -154,7 +154,7 @@ export function createNewPatient(petal_patient) {
     contact_methods: petal_patient.contact_methods.map((cm) => ({
       number: cm.number,
       kind: cm.kind,
-      last_revision_datetime: petal_patient.last_revision_datetime,
+      last_revision_datetime: cm.last_revision_datetime,
     })),
   };
 }
@@ -174,7 +174,7 @@ export function editNewPatient(petal_patient, currentPatient) {
     family_doctor: currentPatient.family_doctor || null,
     address: {
       street: currentPatient.address.street || petal_patient.address.street,
-      last_revision_datetime: currentPatient.last_revision_datetime,
+      last_revision_datetime: currentPatient.address.last_revision_datetime,
       city: currentPatient.address.city || petal_patient.address.city,
       postal_code:
         currentPatient.address.postal_code || petal_patient.address.postal_code,
@@ -185,7 +185,7 @@ export function editNewPatient(petal_patient, currentPatient) {
     ).map((cm) => ({
       number: cm.number,
       kind: cm.kind,
-      last_revision_datetime: currentPatient.last_revision_datetime,
+      last_revision_datetime: cm.last_revision_datetime,
     })),
   };
 }
