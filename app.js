@@ -1,5 +1,6 @@
 import express from "express";
 import fs from "fs";
+import moment from "moment";
 import {
   initializeObjects,
   createNewAppointment,
@@ -92,7 +93,7 @@ app.post("/appointments", (req, res) => {
       res.status(404).send({
         error: {
           msg: "No result found",
-          code: "error",
+          code: "404 error",
         },
       });
     } else {
@@ -103,7 +104,10 @@ app.post("/appointments", (req, res) => {
       );
       freshAppointments.push(newAppointment);
 
-      fs.writeFileSync("db/appointments.json", JSON.stringify(freshAppointments));
+      fs.writeFileSync(
+        "db/appointments.json",
+        JSON.stringify(freshAppointments)
+      );
 
       res.status(201).json(newAppointment);
     }
@@ -137,7 +141,10 @@ app.delete("/appointments/:appointmentId", (req, res) => {
         ...freshAppointments.filter((a) => a.id !== appointmentId),
         cancelAppointment,
       ];
-      fs.writeFileSync("db/appointments.json", JSON.stringify(freshAppointments));
+      fs.writeFileSync(
+        "db/appointments.json",
+        JSON.stringify(freshAppointments)
+      );
 
       res.status(204).send();
     }
@@ -145,7 +152,7 @@ app.delete("/appointments/:appointmentId", (req, res) => {
     res.status(404).send({
       error: {
         msg: "No result found",
-        code: "error",
+        code: "404 error",
       },
     });
   }
@@ -160,7 +167,7 @@ app.get("/appointments/:appointmentId", (req, res) => {
     res.status(404).send({
       error: {
         msg: "No result found",
-        code: "error",
+        code: "404 error",
       },
     });
   }
@@ -186,7 +193,7 @@ app.get("/availabilities/:availabilityId", (req, res) => {
     res.status(404).send({
       error: {
         msg: "No result found",
-        code: "error",
+        code: "404 error",
       },
     });
   }
@@ -275,7 +282,7 @@ app.patch("/patients/:patientId", (req, res) => {
     res.status(404).send({
       error: {
         msg: "No result found",
-        code: "error",
+        code: "404 error",
       },
     });
   }
@@ -290,7 +297,7 @@ app.get("/patients/:patientId", (req, res) => {
     res.status(404).send({
       error: {
         msg: "No result found",
-        code: "error",
+        code: "404 error",
       },
     });
   }
@@ -306,7 +313,7 @@ app.get("/patients/by_hin/:patientHin", (req, res) => {
     res.status(404).send({
       error: {
         msg: "No result found",
-        code: "error",
+        code: "404 error",
       },
     });
   }
@@ -331,7 +338,7 @@ app.get("/resources/:resourceId", (req, res) => {
     res.status(404).send({
       error: {
         msg: "No result found",
-        code: "error",
+        code: "404 error",
       },
     });
   }
@@ -348,15 +355,32 @@ app.get("/resources/:resourceId/availabilities", (req, res) => {
     res.status(404).send({
       error: {
         msg: "No result found",
-        code: "error",
+        code: "404 error",
+      },
+    });
+    return;
+  }
+
+  const startTime = req.query.start_time;
+  const endTime = req.query.end_time;
+
+  if (!startTime || !endTime) {
+    res.status(400).send({
+      error: {
+        msg: "Bad request yo",
+        code: "400 error",
       },
     });
     return;
   }
 
   const availabilitiesToReturn = freshAvailabilities.filter(
-    (a) => a.resource.id === resourceId
+    (a) =>
+      a.resource.id === resourceId &&
+      moment(startTime).isSameOrBefore(moment(a.start_time)) &&
+      moment(endTime).isSameOrAfter(moment(a.end_time))
   );
+
   res.header("X-total-count", availabilitiesToReturn.length);
   res.status(200).json(pagination(availabilitiesToReturn, +perPage, +page));
 });
@@ -371,7 +395,20 @@ app.get("/resources/:resourceId/appointments", (req, res) => {
     res.status(404).send({
       error: {
         msg: "No result found",
-        code: "error",
+        code: "404 error",
+      },
+    });
+    return;
+  }
+
+  const startTime = req.query.start_time;
+  const endTime = req.query.end_time;
+
+  if (!startTime || !endTime) {
+    res.status(400).send({
+      error: {
+        msg: "Bad request yo",
+        code: "400 error",
       },
     });
     return;
@@ -380,9 +417,14 @@ app.get("/resources/:resourceId/appointments", (req, res) => {
   const availability_ids = freshAvailabilities
     .filter((a) => a.resource.id === resourceId)
     .map((a) => a.id);
-  const appointmentsToReturn = freshAppointments.filter((a) =>
-    availability_ids.includes(a.availability_id)
+
+  const appointmentsToReturn = freshAppointments.filter(
+    (a) =>
+      availability_ids.includes(a.availability_id) &&
+      moment(startTime).isSameOrBefore(moment(a.start_time)) &&
+      moment(endTime).isSameOrAfter(moment(a.end_time))
   );
+
   res.header("X-total-count", appointmentsToReturn.length);
   res.status(200).json(pagination(appointmentsToReturn, +perPage, +page));
 });
@@ -397,7 +439,7 @@ app.get("/resources/:resourceId/services", (req, res) => {
     res.status(404).send({
       error: {
         msg: "No result found",
-        code: "error",
+        code: "404 error",
       },
     });
     return;
@@ -428,7 +470,7 @@ app.get("/services/:serviceId", (req, res) => {
     res.status(404).send({
       error: {
         msg: "No result found",
-        code: "error",
+        code: "404 error",
       },
     });
     return;
@@ -458,17 +500,23 @@ app.get("/services/:serviceId/appointments", (req, res) => {
   res.status(299).json("not useful anymore");
 });
 
-console.log("CERTIFICATION VARIABLES")
-console.log(`baseUrl: http://localhost:${port}`)
-console.log(`to_delete_appointment_id: ${freshAppointments[0].id}`)
-console.log(`to_get_appointment_id: ${freshAppointments[1].id}`)
-console.log(`to_get_availability_id: ${freshAvailabilities[0].id}`)
-console.log(`to_patch_patient_id: ${freshPatients[0].id}`)
-console.log(`to_get_patient_id: ${freshPatients[0].id}`)
-console.log(`to_get_patient_hin: ${freshPatients[0].hin_number}`)
-console.log(`to_get_resource_id: ${freshAccounts[0].id}`)
-console.log(`to_get_service_id: ${freshServicesByAccount[freshAccounts[0].id][0].id}`)
-console.log(`cancelled_appointment_id_by_emr: ${freshAppointments[freshAppointments.length - 1].id}`)
+console.log("CERTIFICATION VARIABLES");
+console.log(`baseUrl: http://localhost:${port}`);
+console.log(`to_delete_appointment_id: ${freshAppointments[0].id}`);
+console.log(`to_get_appointment_id: ${freshAppointments[1].id}`);
+console.log(`to_get_availability_id: ${freshAvailabilities[0].id}`);
+console.log(`to_patch_patient_id: ${freshPatients[0].id}`);
+console.log(`to_get_patient_id: ${freshPatients[0].id}`);
+console.log(`to_get_patient_hin: ${freshPatients[0].hin_number}`);
+console.log(`to_get_resource_id: ${freshAccounts[0].id}`);
+console.log(
+  `to_get_service_id: ${freshServicesByAccount[freshAccounts[0].id][0].id}`
+);
+console.log(
+  `cancelled_appointment_id_by_emr: ${
+    freshAppointments[freshAppointments.length - 1].id
+  }`
+);
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
