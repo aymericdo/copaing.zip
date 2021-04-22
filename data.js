@@ -29,8 +29,6 @@ function createService(i) {
     last_revision_datetime: faker.date.recent(),
     description_fr_ca: `fr-${code}`,
     description_en: `en-${code}`,
-    message_fr_ca: code,
-    message_en: code,
   };
 }
 
@@ -159,29 +157,29 @@ export function createNewPatient(petal_patient) {
   };
 }
 
-export function editNewPatient(petal_patient, currentPatient) {
+export function editNewPatient(currentPatient, petalPatient) {
   return {
-    patient_id: petal_patient.patient_id,
-    first_name: petal_patient.first_name,
-    last_name: petal_patient.last_name,
-    gender: petal_patient.gender,
-    email: currentPatient.email || petal_patient.email,
-    hin_number: petal_patient.hin_number,
-    hin_expiration_date: petal_patient.hin_expiration_date,
-    last_revision_datetime: currentPatient.last_revision_datetime,
-    date_of_birth: petal_patient.date_of_birth,
-    locale: petal_patient.locale,
-    family_doctor: currentPatient.family_doctor || null,
+    id: currentPatient.id,
+    first_name: currentPatient.first_name,
+    last_name: currentPatient.last_name,
+    gender: currentPatient.gender,
+    email: petalPatient.email || currentPatient.email,
+    hin_number: currentPatient.hin_number,
+    hin_expiration_date: currentPatient.hin_expiration_date,
+    last_revision_datetime: petalPatient.last_revision_datetime,
+    date_of_birth: currentPatient.date_of_birth,
+    locale: currentPatient.locale,
+    family_doctor: petalPatient.family_doctor || null,
     address: {
-      street: currentPatient.address.street || petal_patient.address.street,
-      last_revision_datetime: currentPatient.address.last_revision_datetime,
-      city: currentPatient.address.city || petal_patient.address.city,
+      street: petalPatient.address.street || currentPatient.address.street,
+      last_revision_datetime: petalPatient.address.last_revision_datetime,
+      city: petalPatient.address.city || currentPatient.address.city,
       postal_code:
-        currentPatient.address.postal_code || petal_patient.address.postal_code,
-      iso_code: currentPatient.address.iso_code || petal_patient.address.iso_code,
+        petalPatient.address.postal_code || currentPatient.address.postal_code,
+      iso_code: petalPatient.address.iso_code || currentPatient.address.iso_code,
     },
     contact_methods: (
-      currentPatient.contact_methods || petal_patient.contact_methods
+      petalPatient.contact_methods || currentPatient.contact_methods
     ).map((cm) => ({
       number: cm.number,
       kind: cm.kind,

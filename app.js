@@ -290,7 +290,7 @@ app.patch("/patients/:patientId", (req, res) => {
     ];
     fs.writeFileSync("db/patients.json", JSON.stringify(freshPatients));
 
-    res.status(204).json(editPatient);
+    res.status(204).send();
   } else {
     res.status(404).send({
       error: {
