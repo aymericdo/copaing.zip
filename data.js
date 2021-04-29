@@ -10,7 +10,7 @@ function createAccount(i) {
   return {
     first_name: firstName,
     last_name: lastName,
-    id: `${i}-${faker.random.uuid()}`,
+    id: `${i}-${faker.datatype.uuid()}`,
     license: `lic-${faker.random.number()}`,
     last_revision_datetime: faker.date.recent(),
     locale: "fr_CA",
@@ -20,7 +20,7 @@ function createAccount(i) {
 }
 
 function createService(i) {
-  const id = `${i}-${faker.random.uuid()}`;
+  const id = `${i}-${faker.datatype.uuid()}`;
   const code = faker.vehicle.vehicle();
 
   return {
@@ -59,7 +59,7 @@ function createPatient(i, freshAccounts) {
   const data = {
     first_name: firstName,
     last_name: lastName,
-    id: `${i}-${faker.random.uuid()}`,
+    id: `${i}-${faker.datatype.uuid()}`,
     locale: "fr_CA",
     email: email.toLowerCase(),
     gender,
@@ -98,7 +98,7 @@ function createAvailability(i, a, s) {
   const startDate = moment(faker.date.soon());
   const endDate = moment(startDate).add(1, "hours");
   return {
-    id: `${i}-${faker.random.uuid()}`,
+    id: `${i}-${faker.datatype.uuid()}`,
     start_time: startDate.format(),
     end_time: endDate.format(),
     last_revision_datetime: faker.date.recent(),
@@ -111,7 +111,7 @@ function createAvailability(i, a, s) {
 
 function createAppointment(i, a, p) {
   return {
-    id: `${i}-${faker.random.uuid()}`,
+    id: `${i}-${faker.datatype.uuid()}`,
     availability_id: a.id,
     start_time: a.start_time,
     end_time: a.end_time,
@@ -131,7 +131,7 @@ function createAppointment(i, a, p) {
 
 export function createNewPatient(petal_patient) {
   return {
-    id: `new-${faker.random.uuid()}`,
+    id: `new-${faker.datatype.uuid()}`,
     first_name: petal_patient.first_name,
     last_name: petal_patient.last_name,
     gender: petal_patient.gender,
@@ -190,7 +190,7 @@ export function editNewPatient(currentPatient, petalPatient) {
 
 export function createNewAppointment(petal_appointment, patient, availability) {
   return {
-    id: `${faker.random.uuid()}`,
+    id: `${faker.datatype.uuid()}`,
     availability_id: availability.id,
     start_time: availability.start_time,
     end_time: availability.end_time,

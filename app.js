@@ -1,6 +1,8 @@
 import express from "express";
 import fs from "fs";
 import moment from "moment";
+import faker from "faker";
+import axios from "axios";
 import {
   initializeObjects,
   createNewAppointment,
@@ -537,6 +539,45 @@ app.get("/services/:serviceId/appointments", (req, res) => {
   // res.status(200).json(pagination(appointmentsToReturn, +perPage, +page))
   res.status(299).json("not useful anymore");
 });
+
+app.post("/webhook", (req, res) => {
+  const type = req.body.type
+  const action = req.body.action
+  const webhook = { type, action }
+  console.log(webhook);
+  /*
+    webhook object :
+    {
+      type: 'availability'|'appointment'|'resource'|'patient'|'service',
+      action: 'delete'|'create'|'update',
+    }
+
+    ex: curl -H "Content-Type: application/json" -X POST -d '{"type":"resource", "action":"create"}' http://localhost:3008/webhook
+  */
+
+  const data = {
+    request_action: webhook.action,
+    object_type: webhook.type,
+    uuid: faker.datatype.uuid(),
+    group_id: '212',
+    last_modified_date: faker.date.recent(),
+    data: 'blop',
+  }
+
+  const headers = {
+    'medesync-signature': 'azerty_medesync',
+  }
+
+  axios.post('http://localhost:3000/webhooks/medesyncs', data, { headers })
+    .then((response) => {
+      console.log(response);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+
+  res.status(201).send();
+})
 
 console.log("CERTIFICATION VARIABLES");
 console.log(`baseUrl: http://localhost:${port}`);
