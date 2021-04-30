@@ -3,6 +3,8 @@ import fs from "fs";
 import moment from "moment";
 import faker from "faker";
 import axios from "axios";
+import dotenv from 'dotenv';
+import { createHmac } from 'crypto';
 import {
   initializeObjects,
   createNewAppointment,
@@ -10,6 +12,7 @@ import {
   editNewPatient,
 } from "./data.js";
 const app = express();
+dotenv.config();
 
 const port = 3008;
 app.use(express.json());
@@ -555,22 +558,29 @@ app.post("/webhook", (req, res) => {
     ex: curl -H "Content-Type: application/json" -X POST -d '{"type":"resource", "action":"create"}' http://localhost:3008/webhook
   */
 
+  const uuid = faker.datatype.uuid()
+  const lastModifiedDate = faker.date.recent()
+
   const data = {
     request_action: webhook.action,
     object_type: webhook.type,
-    uuid: faker.datatype.uuid(),
+    uuid,
     group_id: '212',
-    last_modified_date: faker.date.recent(),
+    last_modified_date: lastModifiedDate,
     data: 'blop',
   }
 
+  const hash = createHmac('sha1', process.env.WEBHOOKS_SECRET)
+    .update(`${uuid}${moment(lastModifiedDate).utc().format('YYYY-MM-DDTHH:mm:ss')}`)
+    .digest('hex')
+
   const headers = {
-    'medesync-signature': 'azerty_medesync',
+    'medesync-signature': Buffer.from(hash).toString('base64'),
   }
 
   axios.post('http://localhost:3000/webhooks/medesyncs', data, { headers })
     .then((response) => {
-      console.log(response);
+      console.log('ok');
     })
     .catch((error) => {
       console.log(error);
@@ -579,23 +589,23 @@ app.post("/webhook", (req, res) => {
   res.status(201).send();
 })
 
-console.log("CERTIFICATION VARIABLES");
-console.log(`baseUrl: http://localhost:${port}`);
-console.log(`to_delete_appointment_id: ${freshAppointments[0].id}`);
-console.log(`to_get_appointment_id: ${freshAppointments[1].id}`);
-console.log(`to_get_availability_id: ${freshAvailabilities[0].id}`);
-console.log(`to_patch_patient_id: ${freshPatients[0].id}`);
-console.log(`to_get_patient_id: ${freshPatients[0].id}`);
-console.log(`to_get_patient_hin: ${freshPatients[0].hin_number}`);
-console.log(`to_get_resource_id: ${freshAccounts[0].id}`);
-console.log(
-  `to_get_service_id: ${freshServicesByAccount[freshAccounts[0].id][0].id}`
-);
-console.log(
-  `cancelled_appointment_id_by_emr: ${
-    freshAppointments[freshAppointments.length - 1].id
-  }`
-);
+// console.log("CERTIFICATION VARIABLES");
+// console.log(`baseUrl: http://localhost:${port}`);
+// console.log(`to_delete_appointment_id: ${freshAppointments[0].id}`);
+// console.log(`to_get_appointment_id: ${freshAppointments[1].id}`);
+// console.log(`to_get_availability_id: ${freshAvailabilities[0].id}`);
+// console.log(`to_patch_patient_id: ${freshPatients[0].id}`);
+// console.log(`to_get_patient_id: ${freshPatients[0].id}`);
+// console.log(`to_get_patient_hin: ${freshPatients[0].hin_number}`);
+// console.log(`to_get_resource_id: ${freshAccounts[0].id}`);
+// console.log(
+//   `to_get_service_id: ${freshServicesByAccount[freshAccounts[0].id][0].id}`
+// );
+// console.log(
+//   `cancelled_appointment_id_by_emr: ${
+//     freshAppointments[freshAppointments.length - 1].id
+//   }`
+// );
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
