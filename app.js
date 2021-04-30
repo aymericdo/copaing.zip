@@ -564,8 +564,8 @@ app.post("/webhook", (req, res) => {
   const data = {
     request_action: webhook.action,
     object_type: webhook.type,
-    uuid,
     group_id: '212',
+    uuid,
     last_modified_date: lastModifiedDate,
     data: 'blop',
   }
