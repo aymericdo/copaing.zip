@@ -551,11 +551,11 @@ app.post("/webhook", (req, res) => {
   /*
     webhook object :
     {
-      type: 'availability'|'appointment'|'resource'|'patient'|'service',
+      type: 'availabilities'|'appointments'|'resources'|'patients'|'services',
       action: 'delete'|'create'|'update',
     }
 
-    ex: curl -H "Content-Type: application/json" -X POST -d '{"type":"resource", "action":"create"}' http://localhost:3008/webhook
+    ex: curl -H "Content-Type: application/json" -X POST -d '{"type":"resources", "action":"create"}' http://localhost:3008/webhook
   */
 
   const uuid = faker.datatype.uuid()
@@ -563,7 +563,6 @@ app.post("/webhook", (req, res) => {
 
   const data = {
     request_action: webhook.action,
-    object_type: webhook.type,
     group_id: '212',
     uuid,
     last_modified_date: lastModifiedDate,
@@ -578,9 +577,10 @@ app.post("/webhook", (req, res) => {
     'medesync-signature': Buffer.from(hash).toString('base64'),
   }
 
-  axios.post('http://localhost:3000/webhooks/medesyncs', data, { headers })
+  axios.post(`http://localhost:3000/webhooks/medesync/${type}`, data, { headers })
     .then((response) => {
-      console.log('ok');
+      console.log('ok')
+      // console.log(response);
     })
     .catch((error) => {
       console.log(error);
