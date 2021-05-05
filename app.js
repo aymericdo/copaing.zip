@@ -555,7 +555,7 @@ app.post("/webhook", (req, res) => {
       action: 'delete'|'create'|'update',
     }
 
-    ex: curl -H "Content-Type: application/json" -X POST -d '{"type":"resources", "action":"create"}' http://localhost:3008/webhook
+    ex: curl -H "Content-Type: application/json" -X POST -d '{"type":"availabilities", "action":"create"}' http://localhost:3008/webhook
   */
 
   const uuid = faker.datatype.uuid()
@@ -563,10 +563,35 @@ app.post("/webhook", (req, res) => {
 
   const data = {
     request_action: webhook.action,
-    group_id: '212',
+    group_id: 'gr-324532545345433',
     uuid,
     last_modified_date: lastModifiedDate,
-    data: 'blop',
+  }
+
+  if (type === "availabilities") {
+    if (action === "create") {
+      const availability = {
+        ...freshAvailabilities[0],
+        resource_id: freshAvailabilities[0].resource.id,
+        service_id: freshAvailabilities[0].service.id,
+      }
+    
+      delete availability.resource
+      delete availability.service
+    
+      data['data'] = availability
+    }
+  } else if (type === "resources") {
+    if (action === "create") {
+      data['data'] = freshAccounts[0]
+    } else if (action === "update") {
+      data['data'] = {
+        ...freshAccounts[0],
+        first_name: 'Marcel'
+      }
+    } else if (action === "delete") {
+      data['data'] = freshAccounts[0]
+    }
   }
 
   const hash = createHmac('sha1', process.env.WEBHOOKS_SECRET)
