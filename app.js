@@ -575,10 +575,33 @@ app.post("/webhook", (req, res) => {
         resource_id: freshAvailabilities[0].resource.id,
         service_id: freshAvailabilities[0].service.id,
       }
-    
+
       delete availability.resource
       delete availability.service
-    
+
+      data['data'] = availability
+    } else if (action === 'update') {
+      const availability = {
+        ...freshAvailabilities[0],
+        resource_id: freshAvailabilities[0].resource.id,
+        service_id: freshAvailabilities[0].service.id,
+        note: 'hahaahmdrlol'
+      }
+
+      delete availability.resource
+      delete availability.service
+
+      data['data'] = availability
+    } else if (action === 'delete') {
+      const availability = {
+        ...freshAvailabilities[0],
+        resource_id: freshAvailabilities[0].resource.id,
+        service_id: freshAvailabilities[0].service.id,
+      }
+
+      delete availability.resource
+      delete availability.service
+
       data['data'] = availability
     }
   } else if (type === "resources") {
@@ -587,7 +610,9 @@ app.post("/webhook", (req, res) => {
     } else if (action === "update") {
       data['data'] = {
         ...freshAccounts[0],
-        first_name: 'Marcel'
+        first_name: 'Marcel',
+        last_name: 'Trougnard',
+        locale: 'en',
       }
     } else if (action === "delete") {
       data['data'] = freshAccounts[0]
