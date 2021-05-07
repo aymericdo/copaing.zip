@@ -4,7 +4,7 @@ import moment from "moment";
 import faker from "faker";
 import axios from "axios";
 import dotenv from 'dotenv';
-import { createHmac } from 'crypto';
+import { createHmac, createHash } from 'crypto';
 import {
   initializeObjects,
   createNewAppointment,
@@ -558,14 +558,11 @@ app.post("/webhook", (req, res) => {
     ex: curl -H "Content-Type: application/json" -X POST -d '{"type":"availabilities", "action":"create"}' http://localhost:3008/webhook
   */
 
-  const uuid = faker.datatype.uuid()
-  const lastModifiedDate = faker.date.recent()
+  const keyID = 'gr-324532545345433'
 
   const data = {
     request_action: webhook.action,
-    group_id: 'gr-324532545345433',
-    uuid,
-    last_modified_date: lastModifiedDate,
+    group_id: keyID,
   }
 
   if (type === "availabilities") {
@@ -629,21 +626,66 @@ app.post("/webhook", (req, res) => {
     }
   }
 
-  const hash = createHmac('sha1', process.env.WEBHOOKS_SECRET)
-    .update(`${uuid}${moment(lastModifiedDate).utc().format('YYYY-MM-DDTHH:mm:ss')}`)
-    .digest('hex')
+  const headers = ['Content-Type', 'Host'];
 
-  const headers = {
-    'medesync-signature': Buffer.from(hash).toString('base64'),
+  const timestamps = ~~(Date.now() / 1000);
+
+  const nonce = faker.datatype.uuid();
+
+  const method = 'post';
+  const host = `localhost:3000`;
+  const path = `/webhooks/medesync/${type}`
+  const queryString = ''
+
+  let signingString = [method, host, path, queryString].join('\n') + '\n';
+
+  let headersStringToHash = 'content-type:application/json'
+  headersStringToHash += '\n' + 'host:' + host + '\n'
+
+  const headerSignature = createHash('sha256')
+    .update(headersStringToHash)
+    .digest('base64')
+
+  signingString += headerSignature + '\n';
+
+  let finalHeaders = {
+    "Content-Type": "application/json"
   }
+  const bodySignature = createHash('sha256')
+    .update(JSON.stringify(data))
+    .digest('base64')
 
-  axios.post(`http://localhost:3000/webhooks/medesync/${type}`, data, { headers })
+  signingString += bodySignature + '\n';
+
+  
+  signingString += '\n'
+  signingString += keyID + '\n';
+  signingString += timestamps + '\n';
+  signingString += nonce
+  
+  const signature = Buffer.from(
+    createHmac('sha1', process.env.WEBHOOKS_SECRET)
+      .update(signingString)
+      .digest('hex')
+    ).toString('base64')
+
+  const authorizationHeaderValue = 'Signature' +
+    ' keyId=' + keyID +
+    ' algorithm=hmac-sha256' +
+    ' headers=' + headers.map(header => header.toLocaleLowerCase()).join(',') +
+    ' nonce=' + nonce +
+    ' timestamps=' + timestamps +
+    ' signature=' + signature
+
+  finalHeaders['Authorization'] = authorizationHeaderValue
+
+  axios.post(`http://localhost:3000/webhooks/medesync/${type}`, data, { headers: finalHeaders })
     .then((response) => {
       console.log('ok')
       // console.log(response);
     })
     .catch((error) => {
-      console.log(error);
+      // console.log(error);
     });
 
   res.status(201).send();
