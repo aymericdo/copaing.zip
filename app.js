@@ -604,6 +604,16 @@ app.post("/webhook", (req, res) => {
 
       data['data'] = availability
     }
+  } else if (type === "appointments") {
+    if (action === "create") {
+      const appointment = {
+        ...freshAppointments[0],
+      }
+
+      delete appointment.created_at
+
+      data['data'] = appointment
+    }
   } else if (type === "resources") {
     if (action === "create") {
       data['data'] = freshAccounts[0]
