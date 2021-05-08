@@ -632,7 +632,7 @@ app.post("/webhook", (req, res) => {
 
   const nonce = faker.datatype.uuid();
 
-  const method = 'post';
+  const method = 'POST';
   const host = `localhost:3000`;
   const path = `/webhooks/medesync/${type}`
   const queryString = ''
