@@ -558,11 +558,11 @@ app.post("/webhook", (req, res) => {
     ex: curl -H "Content-Type: application/json" -X POST -d '{"type":"availabilities", "action":"create"}' http://localhost:3008/webhook
   */
 
-  const keyID = 'gr-324532545345433'
+  const keyID = '23953650-b00f-11eb-8529-0242ac130003'
 
   const data = {
     request_action: webhook.action,
-    group_id: keyID,
+    group_id: 'gr-324532545345433',
   }
 
   if (type === "availabilities") {
@@ -647,7 +647,7 @@ app.post("/webhook", (req, res) => {
     .digest('base64')
 
   signingString += headerSignature + '\n';
-
+  
   let finalHeaders = {
     "Content-Type": "application/json"
   }
@@ -656,18 +656,18 @@ app.post("/webhook", (req, res) => {
     .digest('base64')
 
   signingString += bodySignature + '\n';
-
   
   signingString += '\n'
   signingString += keyID + '\n';
   signingString += timestamps + '\n';
   signingString += nonce
-  
-  const signature = Buffer.from(
-    createHmac('sha1', process.env.WEBHOOKS_SECRET)
+
+  console.log(signingString)
+
+  const signature =
+    createHmac('sha256', process.env.WEBHOOKS_SECRET)
       .update(signingString)
-      .digest('hex')
-    ).toString('base64')
+      .digest('base64')
 
   const authorizationHeaderValue = 'Signature' +
     ' keyId=' + keyID +
@@ -685,7 +685,7 @@ app.post("/webhook", (req, res) => {
       // console.log(response);
     })
     .catch((error) => {
-      // console.log(error);
+      console.log(error);
     });
 
   res.status(201).send();
