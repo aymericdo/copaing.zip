@@ -627,6 +627,33 @@ app.post("/webhook", (req, res) => {
     } else if (action === "delete") {
       data['data'] = freshAccounts[0]
     }
+  } else if (type === "patients") {
+    const patient = {
+      ...freshPatients[0],
+      family_doctor_id: freshAccounts[0].id,
+      contact_methods: [{
+        number: '5555555',
+        kind: 'mobile',
+        last_revision_datetime: freshPatients[0].last_revision_datetime
+      }]
+    }
+    delete patient['family_doctor']
+
+    if (action === "create") {
+      data['data'] = patient
+      console.log(patient)
+    } else if (action === "update") {
+      data['data'] = {
+        ...patient,
+        first_name: 'Gérard',
+        last_name: 'Bruh',
+        hin_number: 'BRUG94101718',
+        hin_expiration_date: '1994/10',
+        locale: 'en',
+      }
+    } else if (action === "delete") {
+      data['data'] = patient
+    }
   }
 
   const hash = createHmac('sha1', process.env.WEBHOOKS_SECRET)
