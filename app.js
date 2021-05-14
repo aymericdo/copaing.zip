@@ -610,6 +610,17 @@ app.post("/webhook", (req, res) => {
       delete appointment.created_at
 
       data['data'] = appointment
+    } else if (action === "update") {
+      const appointment = {
+        ...freshAppointments[0],
+        start_time: "2021-05-15T15:57:57+02:00",
+        end_time: "2021-05-15T16:57:57+02:00",
+        note: 'zbrrah' // never updated
+      }
+
+      delete appointment.created_at
+
+      data['data'] = appointment
     }
   } else if (type === "resources") {
     if (action === "create") {
@@ -640,7 +651,7 @@ app.post("/webhook", (req, res) => {
     } else if (action === "update") {
       data['data'] = {
         ...patient,
-        first_name: 'Gérard',
+        first_name: 'Gerard',
         last_name: 'Bruh',
         hin_number: 'BRUG94101718',
         hin_expiration_date: '1994/10',
@@ -686,8 +697,6 @@ app.post("/webhook", (req, res) => {
   signingString += keyID + '\n';
   signingString += timestamps + '\n';
   signingString += nonce
-
-  console.log(signingString)
 
   const signature =
     createHmac('sha256', process.env.WEBHOOKS_SECRET)
