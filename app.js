@@ -651,11 +651,24 @@ app.post("/webhook", (req, res) => {
     } else if (action === "update") {
       data['data'] = {
         ...patient,
+        address: {
+          street: '1017 Petal Street',
+          city: 'Mourreal',
+          postal_code: 'G1F6B9',
+          last_revision_datetime: freshPatients[0].last_revision_datetime,
+          iso_code: 'CA-QC'
+        },
+        family_doctor: freshAccounts[1],
         first_name: 'Gerard',
         last_name: 'Bruh',
         hin_number: 'BRUG94101718',
         hin_expiration_date: '1994/10',
         locale: 'en',
+        contact_methods: [{
+          number: '4444444',
+          kind: 'home',
+          last_revision_datetime: freshPatients[0].last_revision_datetime
+        }]
       }
     } else if (action === "delete") {
       data['data'] = patient
