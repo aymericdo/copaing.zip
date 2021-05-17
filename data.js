@@ -11,7 +11,7 @@ function createAccount(i) {
     first_name: firstName,
     last_name: lastName,
     id: `${i}-${faker.datatype.uuid()}`,
-    license: `lic-${faker.random.number()}`,
+    license: `lic-${faker.datatype.number()}`,
     last_revision_datetime: faker.date.recent(),
     locale: "fr_CA",
     email: email.toLowerCase(),

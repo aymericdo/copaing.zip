@@ -321,7 +321,7 @@ app.get("/patients/:patientId", (req, res) => {
   }
 });
 
-app.get("/patients/by_hin/:patientHin", (req, res) => {
+app.post("/patients/by_hin/:patientHin", (req, res) => {
   const hin = req.params.patientHin;
 
   const patient = freshPatients.find((pat) => pat.hin_number === hin);
