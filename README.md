@@ -2,7 +2,7 @@ To install dependencies
 * npm i
 
 To run
-* npm run start (mandatory to be in > node 14)
+* npm run start (mandatory to be in > node 15)
 
 If you don't have any *.json file in the root folder, it will create it when the server is starting.
 
