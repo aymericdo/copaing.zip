@@ -647,7 +647,6 @@ app.post("/webhook", (req, res) => {
 
     if (action === "create") {
       data['data'] = patient
-      console.log(patient)
     } else if (action === "update") {
       data['data'] = {
         ...patient,
@@ -672,6 +671,14 @@ app.post("/webhook", (req, res) => {
       }
     } else if (action === "delete") {
       data['data'] = patient
+    }
+  } else if (type === 'services') {
+    const account = freshAccounts[0]
+    if (action === "create") {
+      data['data'] = {
+        ...freshServicesByAccount[account.id][1],
+        resource_id: account.id,
+      }
     }
   }
 
