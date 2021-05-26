@@ -621,6 +621,14 @@ app.post("/webhook", (req, res) => {
       delete appointment.created_at
 
       data['data'] = appointment
+    } else if (action === 'delete') {
+      const appointment = {
+        ...freshAppointments[0],
+      }
+
+      delete appointment.created_at
+
+      data['data'] = appointment
     }
   } else if (type === "resources") {
     if (action === "create") {
@@ -672,12 +680,24 @@ app.post("/webhook", (req, res) => {
     } else if (action === "delete") {
       data['data'] = patient
     }
-  } else if (type === 'services') {
-    const account = freshAccounts[0]
+  } else if (type === "services") {
     if (action === "create") {
       data['data'] = {
-        ...freshServicesByAccount[account.id][1],
-        resource_id: account.id,
+        ...freshServicesByAccount[freshAccounts[0].id][0],
+        resource_id: freshAccounts[0].id
+      }
+    } else if (action === "update") {
+      data['data'] = {
+        ...freshServicesByAccount[freshAccounts[0].id][0],
+        resource_id: freshAccounts[0].id,
+        code: 'BRUH',
+        description_fr_ca: 'une description de service merveilleuse',
+        description_en: 'a wonderful service description',
+      }
+    } else if (action === "delete") {
+      data['data'] = {
+        ...freshServicesByAccount[freshAccounts[0].id][0],
+        resource_id: freshAccounts[0].id
       }
     }
   }
