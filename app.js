@@ -269,6 +269,9 @@ app.patch("/patients/:patientId", (req, res) => {
   const patientId = req.params.patientId;
   const newPatient = req.body;
 
+  console.log('patch patient :')
+  console.log(newPatient)
+
   if (
     newPatient &&
     Object.keys(newPatient).length === 0 &&
@@ -321,8 +324,8 @@ app.get("/patients/:patientId", (req, res) => {
   }
 });
 
-app.post("/patients/by_hin/:patientHin", (req, res) => {
-  const hin = req.params.patientHin;
+app.post("/patients/by_hin", (req, res) => {
+  const hin = req.body.patient_hin;
 
   const patient = freshPatients.find((pat) => pat.hin_number === hin);
   if (patient) {
