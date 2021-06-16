@@ -12,10 +12,13 @@ import {
   editNewPatient,
 } from "./data.js";
 const app = express();
+const router = express.Router();
 dotenv.config();
 
 const port = 3008;
 app.use(express.json());
+
+const URL = "/apitest/appointmenthub/Medesync/test9.89.1140"
 
 let db = {
   freshAccounts: [],
@@ -55,18 +58,18 @@ function pagination(arr, perPage, page) {
   return chunks[page - 1];
 }
 
-app.use((req, res, next) => {
+router.use((req, res, next) => {
   console.log(`${moment()} ${req.method} ${req.originalUrl}`);
   next();
 });
 
 // Routes
-app.post("/authorization", (req, res) => {
+router.post("/authorization", (req, res) => {
   res.status(200).json({ access_token: "azerty", expires_in: 900000 });
 });
 
 // Appointment routes
-app.post("/appointments", (req, res) => {
+router.post("/appointments", (req, res) => {
   const appointment = req.body;
 
   if (
@@ -128,7 +131,7 @@ app.post("/appointments", (req, res) => {
   }
 });
 
-app.delete("/appointments/:appointmentId", (req, res) => {
+router.delete("/appointments/:appointmentId", (req, res) => {
   const appointmentId = req.params.appointmentId;
   const lastRevisionDatetime = req.query.last_revision_datetime;
 
@@ -172,7 +175,7 @@ app.delete("/appointments/:appointmentId", (req, res) => {
   }
 });
 
-app.get("/appointments/:appointmentId", (req, res) => {
+router.get("/appointments/:appointmentId", (req, res) => {
   const appointmentId = req.params.appointmentId;
   const appointment = freshAppointments.find((a) => a.id === appointmentId);
   if (appointment) {
@@ -188,7 +191,7 @@ app.get("/appointments/:appointmentId", (req, res) => {
 });
 
 // Availability routes
-app.get("/availabilities", (req, res) => {
+router.get("/availabilities", (req, res) => {
   // const perPage = req.query.per_page;
   // const page = req.query.page;
   // const availabilitiesToReturn = freshAvailabilities
@@ -197,16 +200,21 @@ app.get("/availabilities", (req, res) => {
   res.status(299).json("not useful anymore");
 });
 
-app.get("/availabilities/:availabilityId", (req, res) => {
+router.get("/availabilities/:availabilityId", (req, res) => {
   const availabilityId = req.params.availabilityId;
 
-  const availability = freshAvailabilities.find((a) => a.id === availabilityId);
-  if (availability) {
-    res.status(200).json({
-      ...availability,
-      resource_id: availability.resource.id,
-      service_id: availability.service.id,
-    });
+  const a = freshAvailabilities.find((a) => a.id === availabilityId);
+  if (a) {
+    const availability = {
+      ...a,
+      resource_id: a.resource.id,
+      service_id: a.service.id,
+    }
+
+    delete availability.resource
+    delete availability.service
+
+    res.status(200).json(availability);
   } else {
     res.status(404).send({
       error: {
@@ -218,7 +226,7 @@ app.get("/availabilities/:availabilityId", (req, res) => {
 });
 
 // Patient routes
-app.post("/patients", (req, res) => {
+router.post("/patients", (req, res) => {
   const patient = req.body;
 
   if (
@@ -257,7 +265,7 @@ app.post("/patients", (req, res) => {
   res.status(201).json(newPatient);
 });
 
-app.get("/patients", (req, res) => {
+router.get("/patients", (req, res) => {
   // const perPage = req.query.per_page;
   // const page = req.query.page;
   // res.header('X-total-count', freshPatients.length)
@@ -265,7 +273,7 @@ app.get("/patients", (req, res) => {
   res.status(299).json("not useful anymore");
 });
 
-app.patch("/patients/:patientId", (req, res) => {
+router.patch("/patients/:patientId", (req, res) => {
   const patientId = req.params.patientId;
   const newPatient = req.body;
 
@@ -306,11 +314,14 @@ app.patch("/patients/:patientId", (req, res) => {
   }
 });
 
-app.get("/patients/:patientId", (req, res) => {
+router.get("/patients/:patientId", (req, res) => {
   const id = req.params.patientId;
   const patient = freshPatients.find((pat) => pat.id === id);
   if (patient) {
-    res.status(200).json(patient);
+    res.status(200).json({
+      ...patient,
+      contact_methods: patient.contact_methods.map(cm => ({ ...cm, number: cm.number.replace(/\D/g, "").slice(0, 12) }))
+    });
   } else {
     res.status(404).send({
       error: {
@@ -321,12 +332,15 @@ app.get("/patients/:patientId", (req, res) => {
   }
 });
 
-app.post("/patients/by_hin", (req, res) => {
+router.post("/patients/by_hin", (req, res) => {
   const hin = req.body.patient_hin;
 
   const patient = freshPatients.find((pat) => pat.hin_number === hin);
   if (patient) {
-    res.status(200).json(patient);
+    res.status(200).json({
+      ...patient,
+      contact_methods: patient.contact_methods.map(cm => ({ ...cm, number: cm.number.replace(/\D/g, "").slice(0, 12) }))
+    });
   } else {
     res.status(404).send({
       error: {
@@ -338,7 +352,7 @@ app.post("/patients/by_hin", (req, res) => {
 });
 
 // Resource routes
-app.get("/resources", (req, res) => {
+router.get("/resources", (req, res) => {
   const perPage = req.query.per_page;
   const page = req.query.page;
 
@@ -346,7 +360,7 @@ app.get("/resources", (req, res) => {
   res.status(200).json(pagination([...freshAccounts], +perPage, +page));
 });
 
-app.get("/resources/:resourceId", (req, res) => {
+router.get("/resources/:resourceId", (req, res) => {
   const resourceId = req.params.resourceId;
 
   const account = freshAccounts.find((account) => account.id === resourceId);
@@ -362,7 +376,7 @@ app.get("/resources/:resourceId", (req, res) => {
   }
 });
 
-app.get("/resources/:resourceId/availabilities", (req, res) => {
+router.get("/resources/:resourceId/availabilities", (req, res) => {
   const resourceId = req.params.resourceId;
   const perPage = req.query.per_page;
   const page = req.query.page;
@@ -405,17 +419,24 @@ app.get("/resources/:resourceId/availabilities", (req, res) => {
           moment.ISO_8601
         )
     )
-    .map((a) => ({
-      ...a,
-      resource_id: a.resource.id,
-      service_id: a.service.id,
-    }));
+    .map((a) => {
+      const availability = {
+        ...a,
+        resource_id: a.resource.id,
+        service_id: a.service.id,
+      }
+
+      delete availability.resource
+      delete availability.service
+
+      return availability
+    });
 
   res.header("X-total-count", availabilitiesToReturn.length);
   res.status(200).json(pagination(availabilitiesToReturn, +perPage, +page));
 });
 
-app.get("/resources/:resourceId/appointments", (req, res) => {
+router.get("/resources/:resourceId/appointments", (req, res) => {
   const resourceId = req.params.resourceId;
   const perPage = req.query.per_page;
   const page = req.query.page;
@@ -465,7 +486,7 @@ app.get("/resources/:resourceId/appointments", (req, res) => {
   res.status(200).json(pagination(appointmentsToReturn, +perPage, +page));
 });
 
-app.get("/resources/:resourceId/services", (req, res) => {
+router.get("/resources/:resourceId/services", (req, res) => {
   const resourceId = req.params.resourceId;
   const perPage = req.query.per_page;
   const page = req.query.page;
@@ -492,7 +513,7 @@ app.get("/resources/:resourceId/services", (req, res) => {
 });
 
 // Service routes
-app.get("/services", (req, res) => {
+router.get("/services", (req, res) => {
   const perPage = req.query.per_page;
   const page = req.query.page;
 
@@ -503,7 +524,7 @@ app.get("/services", (req, res) => {
     );
 });
 
-app.get("/services/:serviceId", (req, res) => {
+router.get("/services/:serviceId", (req, res) => {
   const serviceId = req.params.serviceId;
   const service = Object.values(freshServicesByAccount)
     .flat()
@@ -522,7 +543,7 @@ app.get("/services/:serviceId", (req, res) => {
   res.status(200).json(service);
 });
 
-app.get("/services/:serviceId/availabilities", (req, res) => {
+router.get("/services/:serviceId/availabilities", (req, res) => {
   // const serviceId = req.params.serviceId;
   // const perPage = req.query.per_page;
   // const page = req.query.page;
@@ -532,7 +553,7 @@ app.get("/services/:serviceId/availabilities", (req, res) => {
   res.status(299).json("not useful anymore");
 });
 
-app.get("/services/:serviceId/appointments", (req, res) => {
+router.get("/services/:serviceId/appointments", (req, res) => {
   // const serviceId = req.params.serviceId;
   // const perPage = req.query.per_page;
   // const page = req.query.page;
@@ -542,6 +563,8 @@ app.get("/services/:serviceId/appointments", (req, res) => {
   // res.status(200).json(pagination(appointmentsToReturn, +perPage, +page))
   res.status(299).json("not useful anymore");
 });
+
+app.use(URL, router);
 
 app.post("/webhook", (req, res) => {
   const type = req.body.type
@@ -766,7 +789,7 @@ app.post("/webhook", (req, res) => {
 })
 
 console.log("CERTIFICATION VARIABLES");
-console.log(`baseUrl: http://localhost:${port}`);
+console.log(`baseUrl: http://localhost:${port}${URL}`);
 console.log(`to_delete_appointment_id: ${freshAppointments[0].id}`);
 console.log(`to_get_appointment_id: ${freshAppointments[1].id}`);
 console.log(`to_get_availability_id: ${freshAvailabilities[0].id}`);
