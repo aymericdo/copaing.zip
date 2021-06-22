@@ -788,23 +788,23 @@ app.post("/webhook", (req, res) => {
   res.status(201).send();
 })
 
-console.log("CERTIFICATION VARIABLES");
-console.log(`baseUrl: http://localhost:${port}${URL}`);
-console.log(`to_delete_appointment_id: ${freshAppointments[0].id}`);
-console.log(`to_get_appointment_id: ${freshAppointments[1].id}`);
-console.log(`to_get_availability_id: ${freshAvailabilities[0].id}`);
-console.log(`to_patch_patient_id: ${freshPatients[0].id}`);
-console.log(`to_get_patient_id: ${freshPatients[0].id}`);
-console.log(`to_get_patient_hin: ${freshPatients[0].hin_number}`);
-console.log(`to_get_resource_id: ${freshAccounts[0].id}`);
-console.log(
-  `to_get_service_id: ${freshServicesByAccount[freshAccounts[0].id][0].id}`
-);
-console.log(
-  `cancelled_appointment_id_by_emr: ${
-    freshAppointments[freshAppointments.length - 1].id
-  }`
-);
+// console.log("CERTIFICATION VARIABLES");
+// console.log(`baseUrl: http://localhost:${port}${URL}`);
+// console.log(`to_delete_appointment_id: ${freshAppointments[0].id}`);
+// console.log(`to_get_appointment_id: ${freshAppointments[1].id}`);
+// console.log(`to_get_availability_id: ${freshAvailabilities[0].id}`);
+// console.log(`to_patch_patient_id: ${freshPatients[0].id}`);
+// console.log(`to_get_patient_id: ${freshPatients[0].id}`);
+// console.log(`to_get_patient_hin: ${freshPatients[0].hin_number}`);
+// console.log(`to_get_resource_id: ${freshAccounts[0].id}`);
+// console.log(
+//   `to_get_service_id: ${freshServicesByAccount[freshAccounts[0].id][0].id}`
+// );
+// console.log(
+//   `cancelled_appointment_id_by_emr: ${
+//     freshAppointments[freshAppointments.length - 1].id
+//   }`
+// );
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
