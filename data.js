@@ -16,6 +16,7 @@ function createAccount(i) {
     locale: "fr_CA",
     email: email.toLowerCase(),
     kind: "doctor",
+    enable_emr_sync: faker.datatype.boolean(),
   };
 }
 
