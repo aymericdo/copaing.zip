@@ -179,6 +179,7 @@ router.get("/appointments/:appointmentId", (req, res) => {
   const appointmentId = req.params.appointmentId;
   const appointment = freshAppointments.find((a) => a.id === appointmentId);
   if (appointment) {
+    delete appointment.created_at
     res.status(200).json(appointment);
   } else {
     res.status(404).send({
@@ -480,7 +481,10 @@ router.get("/resources/:resourceId/appointments", (req, res) => {
         moment(a.end_time),
         moment.ISO_8601
       )
-  );
+  ).map((a) => {
+    delete a.created_at
+    return a
+  });
 
   res.header("X-total-count", appointmentsToReturn.length);
   res.status(200).json(pagination(appointmentsToReturn, +perPage, +page));
@@ -499,6 +503,12 @@ router.get("/resources/:resourceId/services", (req, res) => {
         code: "404 error",
       },
     });
+    return;
+  }
+
+  if (!freshServicesByAccount[resourceId]) {
+    res.header("X-total-count", 0);
+    res.status(200).json([])
     return;
   }
 

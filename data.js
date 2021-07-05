@@ -197,7 +197,6 @@ export function createNewAppointment(petal_appointment, patient, availability) {
     service_id: availability.service.id,
     resource_id: availability.resource.id,
     last_revision_datetime: petal_appointment.last_revision_datetime,
-    created_at: moment().format(),
     patient_id: patient.id,
     patient_hin_number: patient.hin_number,
     visit_reason: petal_appointment.visit_reason,
