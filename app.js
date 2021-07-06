@@ -576,6 +576,68 @@ router.get("/services/:serviceId/appointments", (req, res) => {
 
 app.use(URL, router);
 
+app.post('/webhook_partner', (req, res) => {
+  const keyID = "a9b85d2e-6049-4558-9d36-447f3f7710b8"
+  const secret = "51bcabef6ad7f9d117dabaf21969ab42446286a4fa30dc204bd4f27ff9f43f85"
+
+  const authorization = req.get('authorization')
+  const authorizationArray = authorization.split(' ')
+
+  const parsed_parts = ['keyId', 'algorithm', 'headers', 'timestamps', 'nonce', 'signature'].reduce((prev, key) => {
+    const header_key = `${key}=`
+    const item = authorizationArray.find(elem => elem.startsWith(header_key))
+    const value = item.replace(header_key, "")
+
+    prev[key] = value
+
+    return prev;
+  }, {})
+
+  const method = 'POST';
+  const host = req.get('host')
+  const path = '/webhook_partner'
+  const queryString = ''
+
+  let signingString = [method, host, path, queryString].join('\n') + '\n';
+
+  const headersHeader = req.headers
+
+  let headersHeaderStr = ''
+  parsed_parts['headers'].split(',').forEach((key) => {
+    headersHeaderStr += `${key.toLowerCase()}:${headersHeader[key]}\n`
+  })
+
+  const headerSignature = createHash('sha256')
+    .update(JSON.stringify(headersHeaderStr).slice(1, -1))
+    .digest('base64')
+
+  signingString += headerSignature + '\n';
+
+  const bodySignature = createHash('sha256')
+    .update(JSON.stringify(req.body))
+    .digest('base64')
+
+  signingString += bodySignature + '\n';
+  
+  signingString += '\n'
+  signingString += keyID + '\n';
+  signingString += +parsed_parts['timestamps'] + '\n';
+  signingString += parsed_parts['nonce']
+
+  const signature =
+    createHmac('sha256', secret)
+      .update(JSON.stringify(signingString).slice(1, -1))
+      .digest('base64')
+
+  console.log('signature')
+
+  console.log(parsed_parts['signature'])
+  console.log(signature)
+  console.log(parsed_parts['signature'] === signature)
+
+  res.status(204).send();
+})
+
 app.post("/webhook", (req, res) => {
   const type = req.body.type
   const action = req.body.action
