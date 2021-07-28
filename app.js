@@ -657,7 +657,7 @@ app.post("/webhook", (req, res) => {
 
   const data = {
     request_action: webhook.action,
-    group_id: 'gr-324532545345433',
+    group_id: 'test9.89.1140',
   }
 
   if (type === "availabilities") {
@@ -805,7 +805,7 @@ app.post("/webhook", (req, res) => {
 
   const method = 'POST';
   const host = `localhost:3000`;
-  const path = `/webhooks/medesync/${type}`
+  const path = `/webhooks/${type}`
   const queryString = ''
 
   let signingString = [method, host, path, queryString].join('\n') + '\n';
@@ -848,7 +848,7 @@ app.post("/webhook", (req, res) => {
 
   finalHeaders['Authorization'] = authorizationHeaderValue
 
-  axios.post(`http://localhost:3000/webhooks/medesync/${type}`, data, { headers: finalHeaders })
+  axios.post(`http://localhost:3000/webhooks/${type}`, data, { headers: finalHeaders })
     .then((response) => {
       console.log('ok')
       // console.log(response);
